@@ -1,0 +1,107 @@
+syntax="proto3";
+
+option go_package=".;pb";
+
+// gogo proto
+import "gogoproto/gogo.proto";
+option (gogoproto.gostring_all) = true;
+option (gogoproto.equal_all) = true;
+option (gogoproto.verbose_equal_all) = true;
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+
+service Proxy {
+  // ProxyStream proxy 消息流
+  rpc ProxyStream(stream ProxyMessage) returns (stream ProxyMessage){}
+
+  // Register 注册
+  rpc Register(RegisterReq) returns (RegisterReply) {}
+
+  // Login 登录
+  rpc Login(LoginReq) returns (LoginReply) {}
+
+  // Ping ping-pong
+  rpc Ping(Empty) returns (Empty) {}
+}
+
+message ProxyMessage {
+  int64 mid = 1;
+  oneof content {
+    Request request = 2;        // HTTP 请求消息
+    Response response = 3;      // HTTP 响应消息
+    UpgradeReq upgradeReq = 4;  // upgrade 请求
+    UpgradeResp upgradeResp = 5;// upgrade 响应
+    WsMessage wsMsg = 6;        // websocket 消息
+    WsClose wsClose = 7;        // websocket 关闭通知
+    Acknowledgement ack = 8;    // 确认消息
+  }
+}
+
+message ConnEstablish {
+  string id = 1;
+}
+
+message Request {
+  string method = 1;
+  string path = 2;
+  Header header = 3[(gogoproto.nullable) = false];
+  bytes body = 4;
+}
+
+message Response {
+  int32 code = 1;
+  Header header = 2[(gogoproto.nullable) = false];
+  bytes body = 3;
+}
+
+message Header {
+  message Value {
+    repeated string value = 1;
+  }
+  map<string, Value> header = 1[(gogoproto.nullable) = false];
+}
+
+message UpgradeReq {
+  int64 id = 1; // 通过id来复用一个grpc连接
+  string path = 2;
+  Header header = 3[(gogoproto.nullable) = false];
+}
+
+message UpgradeResp {
+  int64 id = 1;
+  Header header = 2[(gogoproto.nullable) = false];
+  string error = 3;
+}
+
+message WsMessage {
+  int64 id = 1; // 发送给哪个客户端
+  bytes msg = 2; // websocket 消息
+}
+
+message WsClose {
+  int64 id = 1;
+}
+
+message Acknowledgement {string error = 1;}
+
+message RegisterReq {
+  string account = 1;
+  string password = 2;
+}
+
+message RegisterReply {}
+
+message LoginReq {
+  string account = 1;
+  string password = 2;
+}
+
+message LoginReply {
+  string token = 1;       // JWT token
+  string restAddress = 2; // REST api 公网映射地址
+  string wsAddress = 3;   // websocket 公网映射地址
+}
+
+message Empty{}

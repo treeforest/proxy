@@ -1,0 +1,28 @@
+# 向外暴露的 HTTP Base URL
+baseURL: http://127.0.0.1:9090
+
+# GRPC 服务地址
+rpcAddress: 0.0.0.0:9091
+
+# HTTP 服务地址
+httpAddress: 0.0.0.0:9090
+
+# 是否启用 TLS
+enableTLS: true
+
+# Bolt 数据库路径
+boltDBPath: my.db
+
+# 日志配置
+logger:
+  # 日志输出类型。1 代表输出到控制台; 2 代表输出到文件
+  type: 1
+
+  # 日志等级。0 DEBUG; 1 INFO; 2 WARN; 3 ERROR; 4 FATAL
+  level: 0
+
+  # 日志文件输出路径
+  path: ./log
+
+  # 日志文件大小上限，用于分片
+  capacity: 65536 # 64KB
